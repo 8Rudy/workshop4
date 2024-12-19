@@ -1,6 +1,6 @@
 # АНАЛИЗ ДАННЫХ И ИСКУССТВЕННЫЙ ИНТЕЛЛЕКТ [in GameDev]
 Отчет по лабораторной работе #4 выполнил(а):
-- Чугунов Тимофей Анатольевич
+- Чернявская София Владиславовна
 - РИ-230932
 Отметка о выполнении заданий (заполняется студентом):
 
@@ -39,13 +39,13 @@
 
 
 ## Задание 1: в проекте Unity реализовать перцептрон, который умеет производить вычисления: 
-Перциптрон, вычисляющий OR. Он работает корректно, так как TotalError = 0
+Перцептрон, вычисляющий OR. Он работает корректно, так как TotalError = 0
 
 ![image](https://github.com/user-attachments/assets/4171ceca-0b6b-4057-97c5-6fbdc6f12871)
 ![image](https://github.com/user-attachments/assets/86eb9606-dad1-4fa4-8505-eab4ffcb44ee)
 
 ## AND 
-Перциптрон, вычисляющий AND.Он так же работает корректно, так как TotalError = 0, как и в прошлом примере
+Перцептрон, вычисляющий AND.Он так же работает корректно, так как TotalError = 0, как и в прошлом примере
 
 ![image](https://github.com/user-attachments/assets/523f39d3-c55f-4887-b902-4a3e6a45e461)
 ![image](https://github.com/user-attachments/assets/c57596a5-164d-49cc-a0ea-ec34ed2362b3)
@@ -53,7 +53,7 @@
 
 
 ## NAND 
-Перциптрон, вычисляющий NAND, аналогично TotalError = 0. Он работает без ошибок.
+Перцептрон, вычисляющий NAND, аналогично TotalError = 0. Он работает без ошибок.
  
 ![image](https://github.com/user-attachments/assets/591aea0c-ba03-405a-9f96-8da34cba8b22)
 ![image](https://github.com/user-attachments/assets/e11194e6-bf08-42b5-a2c2-e4f4f489d754)
