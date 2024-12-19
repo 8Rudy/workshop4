@@ -61,8 +61,8 @@
 
 
 ## XOR 
- TotalError = 0. Перцептрон работает корректно. Но для работы этой функции и для дальнейшей привязки ко 2 заданию, необходим отдельный код:
-
+ TotalError = 0. Перцептрон работает корректно. Код для работы этой функции:
+```cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -77,17 +77,16 @@ public class XOR_Perceptron : MonoBehaviour
         public double[] input;
         public double output;
     }
+
     [SerializeField] private string name;
-    [SerializeField] private int epochAmount;
-        
-        
+    [SerializeField] private int epochAmount = 15; // Устанавливаем количество эпох равным 15
+
     [SerializeField] private GameObject box1;
     [SerializeField] private GameObject box2;
-	
     [SerializeField] private GameObject resultBox;
-	
+
     private Color boxValue;
-        
+
     public TrainingSet[] ts;
 
     private double[,] weightsInputHidden;
@@ -96,11 +95,12 @@ public class XOR_Perceptron : MonoBehaviour
     private double[] biasesHidden;
     private double biasOutput;
     private double learningRate = 0.1;
+
     private StreamWriter writer = new StreamWriter("output.csv");
 
-    private string sheetId = "1s1AhpZU16Qcbkl71SKyP50BRlhhSsHSCXNyD2cTfrpg"; 
-    private string apiKey = "AIzaSyAfYRYdMIrptX7YaABRg2gmC_G6a78oE5I"; 
-    public string sheetName = "Workshop"; 
+    private string sheetId = "1s1AhpZU16Qcbkl71SKyP50BRlhhSsHSCXNyD2cTfrpg";
+    private string apiKey = "AIzaSyAfYRYdMIrptX7YaABRg2gmC_G6a78oE5I";
+    public string sheetName = "Workshop";
 
     void InitialiseWeights()
     {
@@ -142,7 +142,6 @@ public class XOR_Perceptron : MonoBehaviour
 
             foreach (var data in ts)
             {
-                // Forward pass
                 for (int i = 0; i < 2; i++)
                 {
                     hiddenLayer[i] = 0;
@@ -162,7 +161,6 @@ public class XOR_Perceptron : MonoBehaviour
                 output += biasOutput;
                 output = Sigmoid(output);
 
-                // Backpropagation
                 double outputError = data.output - output;
                 double outputGradient = outputError * SigmoidDerivative(output);
 
@@ -191,7 +189,6 @@ public class XOR_Perceptron : MonoBehaviour
     {
         for (int i = 0; i < 2; i++)
         {
-            Debug.Log((input[0], input[1]));
             hiddenLayer[i] = 0;
             for (int j = 0; j < 2; j++)
             {
@@ -210,19 +207,15 @@ public class XOR_Perceptron : MonoBehaviour
         return Sigmoid(output) > 0.5 ? 1 : 0;
     }
 
-
-
     void Start()
     {
         Train(epochAmount);
         float box1Value = Mathf.Round(box1.GetComponent<Renderer>().material.color.r);
         float box2Value = Mathf.Round(box2.GetComponent<Renderer>().material.color.r);
-        
-        Debug.Log((box1Value, box2Value));
+
         double[] data = { box1Value, box2Value };
         float resultColor = (float)CalcOutput(data);
-        Debug.Log(resultColor);
-        
+
         boxValue = new Color(resultColor, resultColor, resultColor);
         resultBox.GetComponent<Renderer>().material.color = boxValue;
     }
@@ -235,6 +228,7 @@ public class XOR_Perceptron : MonoBehaviour
 }
 
 
+```
 
 ![image](https://github.com/user-attachments/assets/019e248f-5711-4188-8169-2123e2e2382f)
 
