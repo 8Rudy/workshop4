@@ -41,20 +41,17 @@
 ## Задание 1: в проекте Unity реализовать перцептрон, который умеет производить вычисления: 
 Перцептрон, вычисляющий OR. Он работает корректно, так как TotalError = 0
 
-![image](https://github.com/user-attachments/assets/86eb9606-dad1-4fa4-8505-eab4ffcb44ee)
+![image](https://github.com/user-attachments/assets/539dc87e-5a52-480e-85f6-85abff67160d)
 
 ## AND 
 Перцептрон, вычисляющий AND.Он так же работает корректно, так как TotalError = 0, как и в прошлом примере
 
-![image](https://github.com/user-attachments/assets/c57596a5-164d-49cc-a0ea-ec34ed2362b3)
-
-
+![image](https://github.com/user-attachments/assets/dada8452-6fa8-4f9b-8e69-0a1b7742c712)
 
 ## NAND 
 Перцептрон, вычисляющий NAND, аналогично TotalError = 0. Он работает без ошибок.
  
-![image](https://github.com/user-attachments/assets/e11194e6-bf08-42b5-a2c2-e4f4f489d754)
-
+![image](https://github.com/user-attachments/assets/83957fbe-e982-448d-ba86-22385dd35883)
 
 
 ## XOR 
@@ -227,8 +224,8 @@ public class XORPerceptron : MonoBehaviour
     }
 }
 ```
+![image](https://github.com/user-attachments/assets/e5b0b438-edf7-4758-82ad-ca66421ccafd)
 
-![image](https://github.com/user-attachments/assets/c69a13ec-0657-4412-84d7-57c5c94c8908)
 ## Задание 2: Построить графики зависимости количества эпох от ошибки  обучения. Указать от чего зависит необходимое количество эпох обучения.
 
 В простых задачах, таких как **AND**, **OR** и **NAND**, которые являются **линейно разделимыми функциями**, однослойный перцептрон способен эффективно найти решение. В таких случаях количество эпох — то есть полных проходов по всем обучающим данным — можно держать небольшим. Этого обычно достаточно для того, чтобы ошибка обучения уменьшилась до нуля.  
@@ -242,10 +239,12 @@ public class XORPerceptron : MonoBehaviour
 
 
 ## Задание 3: Построить визуальную модель работы перцептрона на сцене Unity.
-Функции и зависимости перекидываем на объекты
+Сцена и игра:
+![image](https://github.com/user-attachments/assets/a1591f2b-95f5-4ee1-88b7-039d90f54077)
+![image](https://github.com/user-attachments/assets/4eb9173a-3a2a-4ded-8022-370ab08df5b1)
 
-![image](https://github.com/user-attachments/assets/e540b1f4-172e-4161-923c-8dd9f189e422)
-
+Общий план:
+![image](https://github.com/user-attachments/assets/1b82e9ab-c7ac-4f71-98c0-acbc73fadebd)
 
 ## Выводы
 
