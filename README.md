@@ -41,13 +41,11 @@
 ## Задание 1: в проекте Unity реализовать перцептрон, который умеет производить вычисления: 
 Перцептрон, вычисляющий OR. Он работает корректно, так как TotalError = 0
 
-![image](https://github.com/user-attachments/assets/4171ceca-0b6b-4057-97c5-6fbdc6f12871)
 ![image](https://github.com/user-attachments/assets/86eb9606-dad1-4fa4-8505-eab4ffcb44ee)
 
 ## AND 
 Перцептрон, вычисляющий AND.Он так же работает корректно, так как TotalError = 0, как и в прошлом примере
 
-![image](https://github.com/user-attachments/assets/523f39d3-c55f-4887-b902-4a3e6a45e461)
 ![image](https://github.com/user-attachments/assets/c57596a5-164d-49cc-a0ea-ec34ed2362b3)
 
 
@@ -55,182 +53,180 @@
 ## NAND 
 Перцептрон, вычисляющий NAND, аналогично TotalError = 0. Он работает без ошибок.
  
-![image](https://github.com/user-attachments/assets/591aea0c-ba03-405a-9f96-8da34cba8b22)
 ![image](https://github.com/user-attachments/assets/e11194e6-bf08-42b5-a2c2-e4f4f489d754)
 
 
 
 ## XOR 
  TotalError = 0. Перцептрон работает корректно. Код для работы этой функции:
+
 ```cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Networking;
 using System.IO;
 
-public class XOR_Perceptron : MonoBehaviour
+public class XORPerceptron : MonoBehaviour
 {
     [System.Serializable]
-    public class TrainingSet
+    public class DataSet
     {
-        public double[] input;
-        public double output;
+        public double[] Inputs;
+        public double ExpectedOutput;
     }
 
-    [SerializeField] private string name;
-    [SerializeField] private int epochAmount = 15; // Устанавливаем количество эпох равным 15
+    [SerializeField] private string perceptronName;
+    [SerializeField] private int numberOfEpochs = 15;
 
-    [SerializeField] private GameObject box1;
-    [SerializeField] private GameObject box2;
-    [SerializeField] private GameObject resultBox;
+    [SerializeField] private GameObject inputBox1;
+    [SerializeField] private GameObject inputBox2;
+    [SerializeField] private GameObject outputBox;
 
-    private Color boxValue;
+    private Color outputColor;
 
-    public TrainingSet[] ts;
+    public DataSet[] trainingData;
 
-    private double[,] weightsInputHidden;
-    private double[] weightsHiddenOutput;
-    private double[] hiddenLayer;
-    private double[] biasesHidden;
-    private double biasOutput;
-    private double learningRate = 0.1;
+    private double[,] hiddenWeights;
+    private double[] outputWeights;
+    private double[] hiddenNeuronOutputs;
+    private double[] hiddenBiases;
+    private double outputBias;
+    private double learningRateCoefficient = 0.1;
 
-    private StreamWriter writer = new StreamWriter("output.csv");
+    private StreamWriter fileWriter = new StreamWriter("output.csv");
 
-    private string sheetId = "1s1AhpZU16Qcbkl71SKyP50BRlhhSsHSCXNyD2cTfrpg";
-    private string apiKey = "AIzaSyAfYRYdMIrptX7YaABRg2gmC_G6a78oE5I";
-    public string sheetName = "Workshop";
+    private string googleSheetId = "1iiaMClYNakPxMpIi1tHBvmvNVliQhCiAm8BnDz8cU5I";
+    private string googleApiKey = "AIzaSyDdDO-Z3VU_QaY1unADS44ml98T5TmdI1s";
+    public string sheetTabName = "Workshop";
 
-    void InitialiseWeights()
+    void InitializeNetwork()
     {
-        weightsInputHidden = new double[2, 2];
-        weightsHiddenOutput = new double[2];
-        biasesHidden = new double[2];
+        hiddenWeights = new double[2, 2];
+        outputWeights = new double[2];
+        hiddenBiases = new double[2];
+        hiddenNeuronOutputs = new double[2];
 
         for (int i = 0; i < 2; i++)
         {
             for (int j = 0; j < 2; j++)
             {
-                weightsInputHidden[i, j] = Random.Range(-1.0f, 1.0f);
+                hiddenWeights[i, j] = Random.Range(-1.0f, 1.0f);
             }
-            weightsHiddenOutput[i] = Random.Range(-1.0f, 1.0f);
-            biasesHidden[i] = Random.Range(-1.0f, 1.0f);
+            outputWeights[i] = Random.Range(-1.0f, 1.0f);
+            hiddenBiases[i] = Random.Range(-1.0f, 1.0f);
         }
-
-        biasOutput = Random.Range(-1.0f, 1.0f);
-        hiddenLayer = new double[2];
+        outputBias = Random.Range(-1.0f, 1.0f);
     }
 
-    double Sigmoid(double x)
+    double ActivationFunction(double input)
     {
-        return 1.0 / (1.0 + Mathf.Exp((float)-x));
+        return 1.0 / (1.0 + Mathf.Exp((float)-input));
     }
 
-    double SigmoidDerivative(double x)
+    double DerivativeActivationFunction(double output)
     {
-        return x * (1 - x);
+        return output * (1 - output);
     }
 
-    void Train(int epochs)
+    void TrainPerceptron(int epochs)
     {
-        InitialiseWeights();
+        InitializeNetwork();
 
-        for (int epoch = 1; epoch <= epochs; epoch++)
+        for (int epoch = 0; epoch < epochs; epoch++)
         {
-            double totalError = 0;
+            double cumulativeError = 0;
 
-            foreach (var data in ts)
+            foreach (var sample in trainingData)
             {
+                // Обработка данных через нейросеть
                 for (int i = 0; i < 2; i++)
                 {
-                    hiddenLayer[i] = 0;
+                    hiddenNeuronOutputs[i] = 0;
                     for (int j = 0; j < 2; j++)
                     {
-                        hiddenLayer[i] += data.input[j] * weightsInputHidden[j, i];
+                        hiddenNeuronOutputs[i] += sample.Inputs[j] * hiddenWeights[j, i];
                     }
-                    hiddenLayer[i] += biasesHidden[i];
-                    hiddenLayer[i] = Sigmoid(hiddenLayer[i]);
+                    hiddenNeuronOutputs[i] += hiddenBiases[i];
+                    hiddenNeuronOutputs[i] = ActivationFunction(hiddenNeuronOutputs[i]);
                 }
 
-                double output = 0;
+                // Вычисление выходного значения
+                double actualOutput = 0;
                 for (int i = 0; i < 2; i++)
                 {
-                    output += hiddenLayer[i] * weightsHiddenOutput[i];
+                    actualOutput += hiddenNeuronOutputs[i] * outputWeights[i];
                 }
-                output += biasOutput;
-                output = Sigmoid(output);
+                actualOutput += outputBias;
+                actualOutput = ActivationFunction(actualOutput);
 
-                double outputError = data.output - output;
-                double outputGradient = outputError * SigmoidDerivative(output);
+                // Обратное распространение ошибки
+                double error = sample.ExpectedOutput - actualOutput;
+                double outputGradient = error * DerivativeActivationFunction(actualOutput);
 
                 for (int i = 0; i < 2; i++)
                 {
-                    double hiddenError = outputGradient * weightsHiddenOutput[i];
-                    double hiddenGradient = hiddenError * SigmoidDerivative(hiddenLayer[i]);
+                    double hiddenError = outputGradient * outputWeights[i];
+                    double hiddenGradient = hiddenError * DerivativeActivationFunction(hiddenNeuronOutputs[i]);
 
                     for (int j = 0; j < 2; j++)
                     {
-                        weightsInputHidden[j, i] += learningRate * hiddenGradient * data.input[j];
+                        hiddenWeights[j, i] += learningRateCoefficient * hiddenGradient * sample.Inputs[j];
                     }
 
-                    biasesHidden[i] += learningRate * hiddenGradient;
-                    weightsHiddenOutput[i] += learningRate * outputGradient * hiddenLayer[i];
+                    hiddenBiases[i] += learningRateCoefficient * hiddenGradient;
+                    outputWeights[i] += learningRateCoefficient * outputGradient * hiddenNeuronOutputs[i];
                 }
 
-                biasOutput += learningRate * outputGradient;
+                outputBias += learningRateCoefficient * outputGradient;
 
-                totalError += Mathf.Abs((float)outputError);
+                cumulativeError += Mathf.Abs((float)error);
             }
         }
     }
 
-    double CalcOutput(double[] input)
+    double ComputeOutput(double[] inputs)
     {
         for (int i = 0; i < 2; i++)
         {
-            hiddenLayer[i] = 0;
+            hiddenNeuronOutputs[i] = 0;
             for (int j = 0; j < 2; j++)
             {
-                hiddenLayer[i] += input[j] * weightsInputHidden[j, i];
+                hiddenNeuronOutputs[i] += inputs[j] * hiddenWeights[j, i];
             }
-            hiddenLayer[i] += biasesHidden[i];
-            hiddenLayer[i] = Sigmoid(hiddenLayer[i]);
+            hiddenNeuronOutputs[i] += hiddenBiases[i];
+            hiddenNeuronOutputs[i] = ActivationFunction(hiddenNeuronOutputs[i]);
         }
 
         double output = 0;
         for (int i = 0; i < 2; i++)
         {
-            output += hiddenLayer[i] * weightsHiddenOutput[i];
+            output += hiddenNeuronOutputs[i] * outputWeights[i];
         }
-        output += biasOutput;
-        return Sigmoid(output) > 0.5 ? 1 : 0;
+        output += outputBias;
+        return ActivationFunction(output) > 0.5 ? 1 : 0;
     }
 
     void Start()
     {
-        Train(epochAmount);
-        float box1Value = Mathf.Round(box1.GetComponent<Renderer>().material.color.r);
-        float box2Value = Mathf.Round(box2.GetComponent<Renderer>().material.color.r);
+        TrainPerceptron(numberOfEpochs);
 
-        double[] data = { box1Value, box2Value };
-        float resultColor = (float)CalcOutput(data);
+        float input1 = Mathf.Round(inputBox1.GetComponent<Renderer>().material.color.r);
+        float input2 = Mathf.Round(inputBox2.GetComponent<Renderer>().material.color.r);
 
-        boxValue = new Color(resultColor, resultColor, resultColor);
-        resultBox.GetComponent<Renderer>().material.color = boxValue;
+        double[] inputs = { input1, input2 };
+        float result = (float)ComputeOutput(inputs);
+
+        outputColor = new Color(result, result, result);
+        outputBox.GetComponent<Renderer>().material.color = outputColor;
     }
 
     [System.Serializable]
-    private class ValueRange
+    private class SpreadsheetData
     {
-        public string[][] values;
+        public string[][] cellValues;
     }
 }
-
-
 ```
-
-![image](https://github.com/user-attachments/assets/019e248f-5711-4188-8169-2123e2e2382f)
 
 ![image](https://github.com/user-attachments/assets/c69a13ec-0657-4412-84d7-57c5c94c8908)
 ## Задание 2: Построить графики зависимости количества эпох от ошибки  обучения. Указать от чего зависит необходимое количество эпох обучения.
@@ -247,7 +243,7 @@ public class XOR_Perceptron : MonoBehaviour
 
 ## Задание 3: Построить визуальную модель работы перцептрона на сцене Unity.
 Функции и зависимости перекидываем на объекты
-![image](https://github.com/user-attachments/assets/9f4b17cb-c408-4b07-a0b2-c91cb401ae76)
+
 ![image](https://github.com/user-attachments/assets/e540b1f4-172e-4161-923c-8dd9f189e422)
 
 
