@@ -40,29 +40,30 @@
 
 ## Задание 1: в проекте Unity реализовать перцептрон, который умеет производить вычисления: 
 ## OR 
-
+В этой задаче модель принимает два входа и выдает один выход. Выход будет равен 1, если хотя бы один из входов равен 1, и 0, только если оба входа равны 0. 
 
 ![image](https://github.com/user-attachments/assets/539dc87e-5a52-480e-85f6-85abff67160d)
 
 ## AND 
-Перцептрон, вычисляющий AND.Он так же работает корректно, так как TotalError = 0, как и в прошлом примере
+Перцептрон для этой задачи имеет два входа и один выход, а его выход будет равен 1 только в случае, если оба входа равны 1. В противном случае он будет равен 0.Он так же работает корректно, так как TotalError = 0, как и в прошлом примере
 
 ![image](https://github.com/user-attachments/assets/dada8452-6fa8-4f9b-8e69-0a1b7742c712)
 
 ## NAND 
-Перцептрон, вычисляющий NAND, аналогично TotalError = 0. Он работает без ошибок.
+Перцептрон, вычисляющий NAND, аналогично TotalError = 0. Он работает без ошибок. Операция NAND возвращает 0 только в том случае, когда оба входа равны 1, а во всех остальных случаях выход будет равен 1.
  
 ![image](https://github.com/user-attachments/assets/83957fbe-e982-448d-ba86-22385dd35883)
 
 
 ## XOR 
- TotalError = 0. Перцептрон работает корректно. Код для работы этой функции:
+Операция XOR возвращает 1, если значения на входах различны (то есть, один вход равен 0, а другой — 1), и 0, если оба входа одинаковы. Поскольку XOR является нелинейной функцией, для её корректного выполнения требуется использование более сложной архитектуры (например, многослойного перцептрона). Код для работы этой функции:
 
 ```cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using UnityEngine.Networking;
 
 public class XORPerceptron : MonoBehaviour
 {
@@ -89,13 +90,13 @@ public class XORPerceptron : MonoBehaviour
     private double[] hiddenNeuronOutputs;
     private double[] hiddenBiases;
     private double outputBias;
-    private double learningRateCoefficient = 0.1;
+    private const double LearningRate = 0.1;
 
-    private StreamWriter fileWriter = new StreamWriter("output.csv");
+    private StreamWriter writer = new StreamWriter("output.csv");
 
-    private string googleSheetId = "1iiaMClYNakPxMpIi1tHBvmvNVliQhCiAm8BnDz8cU5I";
-    private string googleApiKey = "AIzaSyDdDO-Z3VU_QaY1unADS44ml98T5TmdI1s";
-    public string sheetTabName = "Workshop";
+    private string sheetId = "1iiaMClYNakPxMpIi1tHBvmvNVliQhCiAm8BnDz8cU5I";
+    private string apiKey = "AIzaSyDdDO-Z3VU_QaY1unADS44ml98T5TmdI1s";
+    public string sheetName = "Workshop";
 
     void InitializeNetwork()
     {
@@ -107,57 +108,44 @@ public class XORPerceptron : MonoBehaviour
         for (int i = 0; i < 2; i++)
         {
             for (int j = 0; j < 2; j++)
-            {
                 hiddenWeights[i, j] = Random.Range(-1.0f, 1.0f);
-            }
+
             outputWeights[i] = Random.Range(-1.0f, 1.0f);
             hiddenBiases[i] = Random.Range(-1.0f, 1.0f);
         }
+
         outputBias = Random.Range(-1.0f, 1.0f);
     }
 
-    double ActivationFunction(double input)
-    {
-        return 1.0 / (1.0 + Mathf.Exp((float)-input));
-    }
+    double ActivationFunction(double input) => 1.0 / (1.0 + Mathf.Exp((float)-input));
 
-    double DerivativeActivationFunction(double output)
-    {
-        return output * (1 - output);
-    }
+    double DerivativeActivationFunction(double output) => output * (1 - output);
 
-    void TrainPerceptron(int epochs)
+    void TrainPerceptron()
     {
         InitializeNetwork();
 
-        for (int epoch = 0; epoch < epochs; epoch++)
+        for (int epoch = 1; epoch <= numberOfEpochs; epoch++)
         {
-            double cumulativeError = 0;
+            double totalError = 0;
 
             foreach (var sample in trainingData)
             {
-                // Обработка данных через нейросеть
                 for (int i = 0; i < 2; i++)
                 {
-                    hiddenNeuronOutputs[i] = 0;
+                    hiddenNeuronOutputs[i] = hiddenBiases[i];
                     for (int j = 0; j < 2; j++)
-                    {
                         hiddenNeuronOutputs[i] += sample.Inputs[j] * hiddenWeights[j, i];
-                    }
-                    hiddenNeuronOutputs[i] += hiddenBiases[i];
+
                     hiddenNeuronOutputs[i] = ActivationFunction(hiddenNeuronOutputs[i]);
                 }
 
-                // Вычисление выходного значения
-                double actualOutput = 0;
+                double actualOutput = outputBias;
                 for (int i = 0; i < 2; i++)
-                {
                     actualOutput += hiddenNeuronOutputs[i] * outputWeights[i];
-                }
-                actualOutput += outputBias;
+
                 actualOutput = ActivationFunction(actualOutput);
 
-                // Обратное распространение ошибки
                 double error = sample.ExpectedOutput - actualOutput;
                 double outputGradient = error * DerivativeActivationFunction(actualOutput);
 
@@ -167,18 +155,17 @@ public class XORPerceptron : MonoBehaviour
                     double hiddenGradient = hiddenError * DerivativeActivationFunction(hiddenNeuronOutputs[i]);
 
                     for (int j = 0; j < 2; j++)
-                    {
-                        hiddenWeights[j, i] += learningRateCoefficient * hiddenGradient * sample.Inputs[j];
-                    }
+                        hiddenWeights[j, i] += LearningRate * hiddenGradient * sample.Inputs[j];
 
-                    hiddenBiases[i] += learningRateCoefficient * hiddenGradient;
-                    outputWeights[i] += learningRateCoefficient * outputGradient * hiddenNeuronOutputs[i];
+                    hiddenBiases[i] += LearningRate * hiddenGradient;
+                    outputWeights[i] += LearningRate * outputGradient * hiddenNeuronOutputs[i];
                 }
 
-                outputBias += learningRateCoefficient * outputGradient;
-
-                cumulativeError += Mathf.Abs((float)error);
+                outputBias += LearningRate * outputGradient;
+                totalError += Mathf.Abs((float)error);
             }
+
+            writer.WriteLine($"{epoch},{totalError}");
         }
     }
 
@@ -186,27 +173,23 @@ public class XORPerceptron : MonoBehaviour
     {
         for (int i = 0; i < 2; i++)
         {
-            hiddenNeuronOutputs[i] = 0;
+            hiddenNeuronOutputs[i] = hiddenBiases[i];
             for (int j = 0; j < 2; j++)
-            {
                 hiddenNeuronOutputs[i] += inputs[j] * hiddenWeights[j, i];
-            }
-            hiddenNeuronOutputs[i] += hiddenBiases[i];
+
             hiddenNeuronOutputs[i] = ActivationFunction(hiddenNeuronOutputs[i]);
         }
 
-        double output = 0;
+        double output = outputBias;
         for (int i = 0; i < 2; i++)
-        {
             output += hiddenNeuronOutputs[i] * outputWeights[i];
-        }
-        output += outputBias;
+
         return ActivationFunction(output) > 0.5 ? 1 : 0;
     }
 
     void Start()
     {
-        TrainPerceptron(numberOfEpochs);
+        TrainPerceptron();
 
         float input1 = Mathf.Round(inputBox1.GetComponent<Renderer>().material.color.r);
         float input2 = Mathf.Round(inputBox2.GetComponent<Renderer>().material.color.r);
@@ -219,11 +202,12 @@ public class XORPerceptron : MonoBehaviour
     }
 
     [System.Serializable]
-    private class SpreadsheetData
+    private class ValueRange
     {
-        public string[][] cellValues;
+        public string[][] values;
     }
 }
+
 ```
 ![image](https://github.com/user-attachments/assets/e5b0b438-edf7-4758-82ad-ca66421ccafd)
 
